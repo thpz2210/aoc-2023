@@ -1,6 +1,6 @@
 fun main() {
 
-    class Card(winningNumbers: Set<Int>, actualNumbers: Set<Int>) {
+    class Card(winningNumbers: List<Int>, actualNumbers: List<Int>) {
         var quantity = 1
         val sizeOfWinningNumbers = winningNumbers.intersect(actualNumbers).size
         val value = if (sizeOfWinningNumbers == 0) 0 else (2.pow(sizeOfWinningNumbers - 1))
@@ -8,9 +8,7 @@ fun main() {
 
     fun String.toCard(): Card {
         val split = this.split(":", "|")
-        return Card(split[1].split(" ").filter { it.isNotEmpty() }.map { it.toInt() }.toSet(),
-            split[2].split(" ").filter { it.isNotEmpty() }.map { it.toInt() }.toSet()
-        )
+        return Card(split[1].splitToInts(" "), split[2].splitToInts(" "))
     }
 
     fun List<String>.toCards() = this.map { it.toCard() }
@@ -19,11 +17,9 @@ fun main() {
 
     fun part2(input: List<String>): Int {
         val cards = input.toCards()
-        return cards
-            .mapIndexed { i, card ->
-                cards.subList(i + 1, i + card.sizeOfWinningNumbers + 1).forEach { it.quantity += card.quantity }
-                card.quantity
-            }.sum()
+        return cards.onEachIndexed { i, card ->
+            cards.subList(i + 1, i + card.sizeOfWinningNumbers + 1).forEach { it.quantity += card.quantity } }
+            .sumOf { it.quantity }
     }
 
     val testInput = readInput("day04_test")

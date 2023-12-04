@@ -40,4 +40,10 @@ fun <T, S, V> Iterable<T>.cartesianProduct(other: Iterable<S>, transformer: (fir
 /**
  * Extensions for integer power
  */
-fun Int.pow(exponent: Int): Int = toDouble().pow(exponent).toInt()
+fun Int.pow(exponent: Int) = toDouble().pow(exponent).toInt()
+
+/**
+ * Extensions for splitting to integers
+ */
+fun String.splitToInts(vararg delimiters: String) =
+    this.split(*delimiters).filter { it.isNotEmpty() }.map { it.toInt() }
