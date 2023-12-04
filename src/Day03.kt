@@ -2,17 +2,17 @@ fun main() {
 
     data class Coordinate(val row: Int, val col: Int)
 
-    class Number(var value: Int, val coordinates: MutableSet<Coordinate>) {
-        fun adjacent() = coordinates.flatMap { c -> setOf(
-            Coordinate(c.row - 1, c.col - 1),
-            Coordinate(c.row - 1, c.col),
-            Coordinate(c.row - 1, c.col + 1),
-            Coordinate(c.row, c.col - 1),
-            Coordinate(c.row, c.col + 1),
-            Coordinate(c.row + 1, c.col - 1),
-            Coordinate(c.row + 1, c.col),
-            Coordinate(c.row + 1, c.col + 1)) }
-            .toSet()
+    class Number(var value: Int) {
+        val coordinates = mutableSetOf<Coordinate>()
+        val adjacents = mutableSetOf<Coordinate>()
+
+        fun addCoordinate(coordinate: Coordinate) {
+            if (coordinates.contains(coordinate)) return
+            coordinates.add(coordinate)
+            (coordinate.row - 1..coordinate.row + 1)
+                .cartesianProduct(coordinate.col - 1..coordinate.col + 1)
+                .forEach { (row, col) -> adjacents.add(Coordinate(row, col)) }
+        }
     }
 
     class Symbol(val value: Char, val coordinate: Coordinate)
@@ -23,12 +23,12 @@ fun main() {
         for (col in this.indices) {
             if (this[col].isDigit()) {
                 if (actualNumber == null) {
-                    actualNumber = Number(0, mutableSetOf())
+                    actualNumber = Number(0)
                     numbers.add(actualNumber)
                 }
                 actualNumber.value *= 10
                 actualNumber.value += "${this[col]}".toInt()
-                actualNumber.coordinates.add(Coordinate(row, col))
+                actualNumber.addCoordinate(Coordinate(row, col))
             } else {
                 actualNumber = null
             }
@@ -47,14 +47,14 @@ fun main() {
     fun part1(input: List<String>): Int {
         val numbers = input.toNumbers()
         val symbols = input.toSymbols().map { it.coordinate }.toSet()
-        return numbers.filter { it.adjacent().any { a -> symbols.contains(a) } }.sumOf { it.value }
+        return numbers.filter { it.adjacents.any { a -> symbols.contains(a) } }.sumOf { it.value }
     }
 
     fun part2(input: List<String>): Int {
         val numbers = input.toNumbers()
         val symbols = input.toSymbols()
         return symbols.filter { s -> s.value == '*' }
-            .map { s -> numbers.filter { n -> n.adjacent().contains(s.coordinate) } }
+            .map { s -> numbers.filter { n -> n.adjacents.contains(s.coordinate) } }
             .filter { adjacants -> adjacants.size == 2 }
             .sumOf { adjacants -> adjacants[0].value * adjacants[1].value }
     }
