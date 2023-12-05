@@ -8,7 +8,7 @@ fun main() {
 
     fun String.toCard(): Card {
         val split = this.split(":", "|")
-        return Card(split[1].splitToInts(" "), split[2].splitToInts(" "))
+        return Card(split[1].splitToInts(), split[2].splitToInts())
     }
 
     fun List<String>.toCards() = this.map { it.toCard() }

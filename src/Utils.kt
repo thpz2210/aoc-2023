@@ -38,12 +38,26 @@ fun <T, S, V> Iterable<T>.cartesianProduct(other: Iterable<S>, transformer: (fir
 }
 
 /**
- * Extensions for integer power
+ * Extension for integer power
  */
 fun Int.pow(exponent: Int) = toDouble().pow(exponent).toInt()
 
 /**
- * Extensions for splitting to integers
+ * Extension for productOf
  */
-fun String.splitToInts(vararg delimiters: String) =
-    this.split(*delimiters).filter { it.isNotEmpty() }.map { it.toInt() }
+inline fun <T> Iterable<T>.productOf(selector: (T) -> Int): Int {
+    var product = 1
+    for (element in this) {
+        product *= selector(element)
+    }
+    return product
+}
+
+/**
+ * Extensions for splitting to numbers
+ */
+fun String.splitToInts(vararg delimiters: String = arrayOf(" "), drop: Int = 0) =
+    this.split(*delimiters).drop(drop).filter { it.isNotEmpty() }.map { it.toInt() }
+
+fun String.splitToLongs(vararg delimiters: String = arrayOf(" "), drop: Int = 0) =
+    this.split(*delimiters).drop(drop).filter { it.isNotEmpty() }.map { it.toLong() }
