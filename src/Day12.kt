@@ -1,41 +1,49 @@
 fun main() {
 
-    class Row(val row: String, val groups: List<Int>) {
+    class Row(val row: MutableList<Char>, val expectedGroups: List<Int>) {
 
-        val arrangements = mutableSetOf<String>()
+        var possibleArrangements = 0
 
-        fun fillArrangements(s: String) {
-            val pivot = s.indexOfFirst { it == '?' }
+        fun actualGroups() = row.takeWhile { it != '?' }.fold(mutableListOf(0)) { acc, c ->
+            if (c == '#')
+                acc[acc.lastIndex] += 1
+            else
+                acc.add(0)
+            acc
+        }.filter { it > 0 }
+
+        fun fillArrangements() {
+            val pivot = row.indexOfFirst { it == '?' }
+
             if (pivot == -1) {
-                arrangements.add(s)
+                if (actualGroups() == expectedGroups)
+                    possibleArrangements += 1
                 return
-            } else {
-                val groupsSoFar = groups(s)
-                if (groupsSoFar.size > groups.size)
-                    return
-                if (groupsSoFar.size > 1 && groupsSoFar.subList(0, groupsSoFar.size - 1) != groups.subList(
-                        0,
-                        groupsSoFar.size - 1
-                    )
-                )
-                    return
-                fillArrangements(s.substringBefore('?') + '#' + s.substringAfter('?'))
-                fillArrangements(s.substringBefore('?') + '.' + s.substringAfter('?'))
             }
-        }
 
-        fun groups(s: String): List<Int> {
-            val cropped = s.substringBefore('?')
-            return cropped.split('.').filter { it.isNotEmpty() }.map { it.length }
+            val actualGroups = actualGroups()
+
+            if (actualGroups.size > expectedGroups.size)
+                return
+
+            if (actualGroups.size > 1 && actualGroups.subList(0, actualGroups.size - 1) != expectedGroups.subList(0, actualGroups.size - 1))
+                return
+
+            row[pivot] = '#'
+            fillArrangements()
+            row[pivot] = '.'
+            fillArrangements()
+            row[pivot] = '?'
         }
 
         fun possibleArrangements(): Int {
-            fillArrangements(row)
-            return arrangements.count { groups(it) == groups }
+            fillArrangements()
+            return possibleArrangements
         }
     }
 
-    fun List<String>.toRows() = map { Row(it.split(" ")[0], it.split(" ")[1].split(",").map { c -> c.toInt() }) }
+    fun List<String>.toRows() =
+        map { Row(it.split(" ")[0].toMutableList(), it.split(" ")[1].split(",").map { c -> c.toInt() }) }
 
     fun List<String>.unfold() = map {
         val conditions = it.split(" ")[0]
@@ -44,15 +52,21 @@ fun main() {
                 ("$groups,") + ("$groups,") + ("$groups,") + ("$groups,") + groups
     }
 
-    fun part1(input: List<String>) = input.toRows().sumOf { it.possibleArrangements() }
+    fun part1(input: List<String>) = input.toRows().mapIndexed { index, row ->
+        println(index)
+        row.possibleArrangements()
+    }.sum()
 
-    fun part2(input: List<String>) = input.unfold().toRows().sumOf { it.possibleArrangements() }
+    fun part2(input: List<String>) = input.unfold().toRows().mapIndexed { index, row ->
+        println(index)
+        row.possibleArrangements()
+    }.sum()
 
     val testInput = readInput("day12_test")
     part1(testInput).check(21)
-    //part2(testInput).check(0)
+    part2(testInput).check(525152)
 
     val input = readInput("day12")
     part1(input).println()
-    // part2(input).println()
+    part2(input).println()
 }
